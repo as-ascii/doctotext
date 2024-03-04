@@ -5,14 +5,6 @@
 	"license": "GPL-2.0-only OR LicenseRef-DocWire-Commercial",
 	"features":
 	{
-		"address-sanitizer":
-		{
-			"description": "Enable address sanitizer in debug build"
-		},
-		"thread-sanitizer":
-		{
-			"description": "Enable thread sanitizer in debug build"
-		},
 		"tests":
 		{
 			"description": "Enable automatic tests"

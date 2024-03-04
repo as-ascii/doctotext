@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.20) # because of cmake_path
+
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(api_tests api_tests.cpp)
@@ -17,9 +19,22 @@ file(COPY ${test_files} DESTINATION .)
 
 include(GoogleTest)
 
+if(WIN32)
+	set(ENV_VAR_NAME "PATH")
+elseif(APPLE)
+	set(ENV_VAR_NAME "DYLD_LIBRARY_PATH")
+else()
+	set(ENV_VAR_NAME "LD_LIBRARY_PATH")
+endif()
+
+set(TEST_LIBRARY_PATH "${TEST_PREPEND_LIBRARY_PATH};$ENV{${ENV_VAR_NAME}}")
+cmake_path(CONVERT "${TEST_LIBRARY_PATH}" TO_NATIVE_PATH_LIST TEST_LIBRARY_PATH)
+set(TEST_ENVIRONMENT_PROPERTY "${ENV_VAR_NAME}=${TEST_LIBRARY_PATH}")
+message(STATUS "Test environment property: ${TEST_ENVIRONMENT_PROPERTY}")
 gtest_discover_tests(api_tests
-        DISCOVERY_MODE PRE_TEST
-        DISCOVERY_TIMEOUT 30
+		DISCOVERY_MODE PRE_TEST
+		DISCOVERY_TIMEOUT 30
+		PROPERTIES ENVIRONMENT "${TEST_ENVIRONMENT_PROPERTY}"
 )
 
 file(READ ../README.md content)

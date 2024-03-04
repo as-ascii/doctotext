@@ -59,13 +59,30 @@ else
 	VCPKG_TRIPLET=x64-linux-dynamic
 fi
 
-if [[ "$SANITIZER" == "address" ]]; then
-	FEATURES="[tests,address-sanitizer]"
-elif [[ "$SANITIZER" == "thread" ]]; then
-	FEATURES="[tests,thread-sanitizer]"
-else
-	FEATURES="[tests]"
+if [[ ! -z "$ADDON" ]]; then
+	if [[ "$ADDON" == "asan" ]]; then
+		SANITIZER_FLAG="-fsanitize=address"
+	elif [[ "$ADDON" == "tsan" ]]; then
+		SANITIZER_FLAG="-fsanitize=thread"
+	else
+		echo "Error: Unknown value for ADDON"
+		exit 1
+	fi
+
+	TRIPLET_SOURCE="vcpkg/triplets/$VCPKG_TRIPLET.cmake"
+	TRIPLET_DEST="vcpkg/triplets/community/$VCPKG_TRIPLET-$ADDON.cmake"
+	if [[ ! -f "$TRIPLET_SOURCE" ]]; then
+		TRIPLET_SOURCE="vcpkg/triplets/community/$VCPKG_TRIPLET.cmake"
+	fi
+	cp "$TRIPLET_SOURCE" "$TRIPLET_DEST"
+	echo >> "$TRIPLET_DEST"
+	echo "set(VCPKG_CXX_FLAGS \"\${VCPKG_CXX_FLAGS} $SANITIZER_FLAG\")" >> "$TRIPLET_DEST"
+	echo "set(VCPKG_C_FLAGS \"\${VCPKG_C_FLAGS} $SANITIZER_FLAG\")" >> "$TRIPLET_DEST"
+	echo "set(VCPKG_LINKER_FLAGS \"\${VCPKG_LINKER_FLAGS} $SANITIZER_FLAG\")" >> "$TRIPLET_DEST"
+	VCPKG_TRIPLET="$VCPKG_TRIPLET-$ADDON"
 fi
+
+echo "Using triplet: $VCPKG_TRIPLET"
 
 if [[ "$DEBUG" == "1" ]]; then
 	export DOCWIRE_LOG_VERBOSITY="debug"
@@ -74,7 +91,7 @@ fi
 
 date > ./ports/docwire/.disable_binary_cache
 SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS=SOURCE_PATH ./vcpkg/vcpkg --overlay-ports=./ports remove docwire:$VCPKG_TRIPLET
-SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS="SOURCE_PATH;DOCWIRE_LOG_VERBOSITY;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS" ./vcpkg/vcpkg --overlay-ports=./ports install $VCPKG_DEBUG_OPTION docwire$FEATURES:$VCPKG_TRIPLET
+SOURCE_PATH="$PWD" VCPKG_KEEP_ENV_VARS="SOURCE_PATH;DOCWIRE_LOG_VERBOSITY;OPENAI_API_KEY;ASAN_OPTIONS;TSAN_OPTIONS" ./vcpkg/vcpkg --overlay-ports=./ports install $VCPKG_DEBUG_OPTION docwire[tests]:$VCPKG_TRIPLET
 
 if [[ "$EXPORT_VCPKG" != "0" ]]; then
 	version=`cat ./vcpkg/installed/$VCPKG_TRIPLET/share/docwire/VERSION`

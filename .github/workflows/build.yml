@@ -9,7 +9,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04, windows-2019, windows-2022, macos-12, flyci-macos-large-latest-m1]
         triplet: [x64-linux-dynamic, x64-windows, x64-osx-dynamic, arm64-osx-dynamic]
-        sanitizer: ["", "address", "thread"]
+        addon: ["", "asan", "tsan"]
         exclude:
           - os: ubuntu-20.04
             triplet: x64-windows
@@ -47,7 +47,7 @@ jobs:
             triplet: x64-windows
           - os: flyci-macos-large-latest-m1
             triplet: x64-osx-dynamic
-    name: ${{ matrix.triplet }}-${{ matrix.os }}${{ matrix.sanitizer != '' && format('-{0}-sanitizer', matrix.sanitizer) || '' }}
+    name: ${{ matrix.triplet }}-${{ matrix.os }}${{ matrix.addon != '' && format('-{0}', matrix.addon) || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 150
     steps:
@@ -72,12 +72,12 @@ jobs:
           BINARY_CACHE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           BINARY_CACHE_GITHUB_OWNERS: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner != github.event.pull_request.base.repo.owner) && format('{0} {1}', github.event.pull_request.base.repo.owner.login, github.event.pull_request.head.repo.owner.login) || github.repository_owner }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          SANITIZER: ${{ matrix.sanitizer }}
-          ASAN_OPTIONS: ${{ matrix.sanitizer == 'address' && 'detect_leaks=0:detect_container_overflow=0' || '' }}
-          TSAN_OPTIONS: ${{ matrix.sanitizer == 'thread' && format('suppressions={0}/tools/thread_sanitizer_suppressions.txt', github.workspace) || '' }}
+          ADDON: ${{ matrix.addon }}
+          ASAN_OPTIONS: ${{ matrix.addon == 'asan' && 'detect_odr_violation=1:detect_leaks=0' || '' }}
+          TSAN_OPTIONS: ${{ matrix.addon == 'tsan' && 'halt_on_error=1' || '' }}
           DEBUG: ${{ runner.debug }}
       - uses: actions/upload-artifact@v4
-        if: success() && matrix.sanitizer == ''
+        if: success() && matrix.addon == ''
         with:
           name: ${{ matrix.triplet }}-${{ matrix.os }}-binaries
           path: |
@@ -87,6 +87,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ matrix.triplet }}-${{ matrix.os }}-${{ matrix.sanitizer == '' && 'binaries' || format('{0}-sanitizer', matrix.sanitizer) }}-logs
+          name: ${{ matrix.triplet }}-${{ matrix.os }}-${{ matrix.addon == '' && 'binaries' || matrix.addon }}-logs
           path: vcpkg/buildtrees/*/*.log
           if-no-files-found: error

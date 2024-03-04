@@ -40,18 +40,32 @@ else
 
 $VCPKG_TRIPLET="x64-windows"
 
-if ($Env:SANITIZER -eq "address")
-{
-	$FEATURES = "[tests,address-sanitizer]"
+if ($env:ADDON) {
+    if ($env:ADDON -eq "asan") {
+        $SANITIZER_FLAG = "-fsanitize=address"
+    }
+    elseif ($env:ADDON -eq "tsan") {
+        $SANITIZER_FLAG = "-fsanitize=thread"
+    }
+    else {
+        Write-Host "Error: Unknown value for ADDON"
+        exit 1
+    }
+
+    $TRIPLET_SOURCE = "vcpkg\triplets\$VCPKG_TRIPLET.cmake"
+    $TRIPLET_DEST = "vcpkg\triplets\community\$VCPKG_TRIPLET-$env:ADDON.cmake"
+    if (-not (Test-Path $TRIPLET_SOURCE)) {
+        $TRIPLET_SOURCE = "vcpkg\triplets\community\$VCPKG_TRIPLET.cmake"
+    }
+    Copy-Item -Path $TRIPLET_SOURCE -Destination $TRIPLET_DEST
+    Add-Content -Path $TRIPLET_DEST -Value "`n"
+    Add-Content -Path $TRIPLET_DEST -Value "set(VCPKG_CXX_FLAGS `"`${VCPKG_CXX_FLAGS} $SANITIZER_FLAG`")"
+    Add-Content -Path $TRIPLET_DEST -Value "set(VCPKG_C_FLAGS `"`${VCPKG_C_FLAGS} $SANITIZER_FLAG`")"
+    Add-Content -Path $TRIPLET_DEST -Value "set(VCPKG_LINKER_FLAGS `"`${VCPKG_LINKER_FLAGS} $SANITIZER_FLAG`")"
+    $VCPKG_TRIPLET = "$VCPKG_TRIPLET-$env:ADDON"
 }
-elseif ($Env:SANITIZER -eq "thread")
-{
-	$FEATURES = "[tests,thread-sanitizer]"
-}
-else
-{
-	$FEATURES = "[tests]"
-}
+
+Write-Host "Using triplet: $VCPKG_TRIPLET"
 
 if ($env:DEBUG -eq "1")
 {
