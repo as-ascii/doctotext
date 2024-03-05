@@ -64,8 +64,8 @@ jobs:
         if: ${{ runner.os == 'Windows' && matrix.addon == 'asan' }}
         uses: al-cheb/configure-pagefile-action@v1.4
         with:
-          minimum-size: 2GB
-          maximum-size: 8GB
+          minimum-size: 4GB
+          maximum-size: 16GB
       - run: |
           ${{ matrix.os == 'ubuntu-20.04' && 'sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && sudo apt-get update && sudo apt-get install gcc-11 g++-11 -y && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 && sudo update-alternatives --set gcc /usr/bin/gcc-11' || '' }}
           ${{ runner.os == 'Linux' && 'sudo apt-get install -y autopoint doxygen' || '' }}
