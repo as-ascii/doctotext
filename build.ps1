@@ -60,7 +60,7 @@ if ($env:ADDON) {
     Copy-Item -Path $TRIPLET_SOURCE -Destination $TRIPLET_DEST
     Add-Content -Path $TRIPLET_DEST -Value "`n"
     if ($env:ADDON -eq "asan") {
-        Add-Content -Path $TRIPLET_DEST -Value "if(NOT (`"botan`", `"libiconv`" -contains $PORT))"
+        Add-Content -Path $TRIPLET_DEST -Value "if(NOT (`"botan`", `"openssl`", `"libiconv`" -contains $PORT))"
     }
     Add-Content -Path $TRIPLET_DEST -Value "set(VCPKG_CXX_FLAGS `"`${VCPKG_CXX_FLAGS} $SANITIZER_FLAG`")"
     Add-Content -Path $TRIPLET_DEST -Value "set(VCPKG_CXX_FLAGS `"`${VCPKG_CXX_FLAGS} $SANITIZER_FLAG`")"
