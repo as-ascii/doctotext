@@ -59,9 +59,16 @@ if ($env:ADDON) {
     }
     Copy-Item -Path $TRIPLET_SOURCE -Destination $TRIPLET_DEST
     Add-Content -Path $TRIPLET_DEST -Value "`n"
+    if ($env:ADDON -eq "asan") {
+        Add-Content -Path $TRIPLET_DEST -Value "if(NOT PORT STREQUAL `"botan`")"
+    }
+    Add-Content -Path $TRIPLET_DEST -Value "set(VCPKG_CXX_FLAGS `"`${VCPKG_CXX_FLAGS} $SANITIZER_FLAG`")"
     Add-Content -Path $TRIPLET_DEST -Value "set(VCPKG_CXX_FLAGS `"`${VCPKG_CXX_FLAGS} $SANITIZER_FLAG`")"
     Add-Content -Path $TRIPLET_DEST -Value "set(VCPKG_C_FLAGS `"`${VCPKG_C_FLAGS} $SANITIZER_FLAG`")"
     Add-Content -Path $TRIPLET_DEST -Value "set(VCPKG_LINKER_FLAGS `"`${VCPKG_LINKER_FLAGS} $SANITIZER_FLAG`")"
+    if ($env:ADDON -eq "asan") {
+        Add-Content -Path $TRIPLET_DEST -Value "endif()"
+    }
     $VCPKG_TRIPLET = "$VCPKG_TRIPLET-$env:ADDON"
 }
 
