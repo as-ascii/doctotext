@@ -1,6 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 Get-PSDrive
+Get-Volume
 wmic pagefile list /format:list
 Get-PSDrive
 
