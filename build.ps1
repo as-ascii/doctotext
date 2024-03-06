@@ -1,7 +1,5 @@
 $ErrorActionPreference = "Stop"
 
-wmic pagefile list /format:list
-
 if ($env:DOWNLOAD_VCPKG -ne "0")
 {
     if (Test-Path vcpkg)
