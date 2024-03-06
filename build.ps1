@@ -1,8 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-Get-PSDrive
 wmic pagefile list /format:list
-Get-PSDrive
 
 if ($env:DOWNLOAD_VCPKG -ne "0")
 {
