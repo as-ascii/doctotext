@@ -83,9 +83,6 @@ jobs:
           ASAN_OPTIONS: ${{ matrix.addon == 'asan' && 'detect_odr_violation=1:detect_leaks=0' || '' }}
           TSAN_OPTIONS: ${{ matrix.addon == 'tsan' && 'halt_on_error=1' || '' }}
           DEBUG: ${{ runner.debug }}
-      - name: Pagefile statistics
-        if: ${{ runner.os == 'Windows' && matrix.addon == 'asan' }}
-        run: wmic pagefile list /format:list
       - uses: actions/upload-artifact@v4
         if: success() && matrix.addon == ''
         with:
