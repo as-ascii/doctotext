@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20) # because of cmake_path
+cmake_minimum_required(VERSION 3.22) # because of PROPERTIES ENVIRONMENT_MODIFICATION
 
 find_package(GTest CONFIG REQUIRED)
 
@@ -27,15 +27,15 @@ else()
 	set(ENV_VAR_NAME "LD_LIBRARY_PATH")
 endif()
 
-set(TEST_LIBRARY_PATH "${TEST_PREPEND_LIBRARY_PATH};$ENV{${ENV_VAR_NAME}}")
-cmake_path(CONVERT "${TEST_LIBRARY_PATH}" TO_NATIVE_PATH_LIST TEST_LIBRARY_PATH)
-string(REPLACE ";" "\\;" ESCAPED_TEST_LIBRARY_PATH "${TEST_LIBRARY_PATH}")
-set(TEST_ENVIRONMENT_PROPERTY "${ENV_VAR_NAME}=${ESCAPED_TEST_LIBRARY_PATH}")
-message(STATUS "Test environment property: ${TEST_ENVIRONMENT_PROPERTY}")
+foreach(path ${TEST_PREPEND_LIBRARY_PATH})
+	file(TO_NATIVE_PATH "${path}" path)
+	list(APPEND TEST_ENVIRONMENT_MODIFICATION_PROPERTY "${ENV_VAR_NAME}=path_list_prepend:${path}")
+endforeach()
+message(STATUS "Test environment modification property: ${TEST_ENVIRONMENT__MODIFICATION_PROPERTY}")
 gtest_discover_tests(api_tests
 		DISCOVERY_MODE PRE_TEST
 		DISCOVERY_TIMEOUT 30
-		PROPERTIES ENVIRONMENT "${TEST_ENVIRONMENT_PROPERTY}"
+		PROPERTIES ENVIRONMENT_MODIFICATION "${TEST_ENVIRONMENT_MODIFICATION_PROPERTY}"
 )
 
 file(READ ../README.md content)
@@ -60,7 +60,7 @@ while (TRUE)
 	string(FIND "${code_block}" "OPENAI_API_KEY" openai_api_key_pos)
 	if (openai_api_key_pos EQUAL -1 OR NOT "$ENV{OPENAI_API_KEY}" STREQUAL "")
 		add_test(NAME example_${n} COMMAND example_${n})
-		set_tests_properties(example_${n} PROPERTIES ENVIRONMENT "${TEST_ENVIRONMENT_PROPERTY}")
+		set_tests_properties(example_${n} PROPERTIES ENVIRONMENT_MODIFICATION "${TEST_ENVIRONMENT_MODIFICATION_PROPERTY}")
 	endif()
 	math(EXPR n "${n} + 1")
 	math(EXPR end_pos "${end_pos} + 3")
