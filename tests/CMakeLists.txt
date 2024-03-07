@@ -31,7 +31,7 @@ foreach(path "${TEST_PREPEND_LIBRARY_PATH}")
 	file(TO_NATIVE_PATH "${path}" path)
 	list(APPEND TEST_ENVIRONMENT_MODIFICATION_PROPERTY "${ENV_VAR_NAME}=path_list_prepend:${path}")
 endforeach()
-message(STATUS "Test environment modification property: ${TEST_ENVIRONMENT__MODIFICATION_PROPERTY}")
+message(STATUS "Test environment modification property: ${TEST_ENVIRONMENT_MODIFICATION_PROPERTY}")
 gtest_discover_tests(api_tests
 		DISCOVERY_MODE PRE_TEST
 		DISCOVERY_TIMEOUT 30
