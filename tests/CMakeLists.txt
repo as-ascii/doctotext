@@ -27,6 +27,7 @@ else()
 	set(ENV_VAR_NAME "LD_LIBRARY_PATH")
 endif()
 
+set(TEST_ENVIRONMENT_MODIFICATION_PROPERTY "")
 foreach(path ${TEST_PREPEND_LIBRARY_PATH})
 	file(TO_NATIVE_PATH "${path}" path)
 	list(APPEND TEST_ENVIRONMENT_MODIFICATION_PROPERTY "${ENV_VAR_NAME}=path_list_prepend:${path}")
