@@ -67,7 +67,8 @@ jobs:
           ${{ runner.os == 'Windows' && 'choco install archiver doxygen.install graphviz -y' || '' }}
           ${{ runner.os == 'Windows' && './build.ps1' || './build.sh' }}
         env:
-          CREATE_ARCHIVE: "1"
+          CREATE_ARCHIVE: ${{ matrix.addon == '' && '1' || '0' }}
+          EXPORT_VCPKG: ${{ matrix.addon == '' && '1' || '0' }}
           BINARY_CACHE_GITHUB_USER: "github-actions"
           BINARY_CACHE_GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           BINARY_CACHE_GITHUB_OWNERS: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.owner != github.event.pull_request.base.repo.owner) && format('{0} {1}', github.event.pull_request.base.repo.owner.login, github.event.pull_request.head.repo.owner.login) || github.repository_owner }}
